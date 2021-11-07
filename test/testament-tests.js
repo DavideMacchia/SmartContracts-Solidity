@@ -106,12 +106,28 @@ contract("Testament", (accounts) => {
         assert.equal(Number(balanceUpdated3), Number(Web3Utils.toWei(new BN(3), "ether")) + Number(balance3), 'ERROR EVENT 3 - LogTestamentTriggered, final balance not correct');
 
     });
-    it("cleanMemory Tests", async () => {
-        let result = await testament.isStored(accounts[0], {from: accounts[6]}).catch((err) => {
-            console.error("ERROR - cleanMemory on accounts[0]" + err);
+    it("unsubscribe & cleanMemory Tests", async () => {
+        await testament.unsubscribe({from: accounts[1]}).catch((err) => {
+            console.error("ERROR - unsubscribe on accounts[1]" + err);
             return false;
         });
-        //memory is clean if the value is zero
-        assert.equal(result.words[0], 0, 'ERROR - cleanMemory');
+        let result = await testament.isStored(accounts[0], {from: accounts[6]}).catch((err) => {
+            console.error("ERROR - isStored on accounts[0]" + err);
+            return false;
+        });
+        let result2 = await testament.isStored(accounts[1], {from: accounts[6]}).catch((err) => {
+            console.error("ERROR - isStored on accounts[1]" + err);
+            return false;
+        });
+        await testament.register({from: accounts[7]});
+        let result3 = await testament.isStored(accounts[7], {from: accounts[6]}).catch((err) => {
+            console.error("ERROR - isStored on accounts[7]" + err);
+            return false;
+        });
+
+        //zero if the account isn't registered, 1 otherwise
+        assert.equal(result.words[0], 0, 'ERROR - accounts[0] has not been cleaned');
+        assert.equal(result2.words[0], 0, 'ERROR - accounts[1] has not been cleaned');
+        assert.equal(result3.words[0], 1, 'ERROR - accounts[7] has not been registered');
     });
 });

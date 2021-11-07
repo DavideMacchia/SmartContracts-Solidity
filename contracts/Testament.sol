@@ -6,14 +6,12 @@ pragma solidity 0.8.9;
 //    to their respective beneficiaries.
 //
 //EXAMPLE: Mary have two sons: Frank and John. Mary deposits on the contract 30 ETH associated to John's address and 15 ETH associated to Frank's address.
-//    Mary passed away (Sadge) and after 60 days her last renew check, her funds are unlocked. If someone (eventually one of her sons) triggers the controlValidSubscription
+//    Mary passed away and after 60 days her last renew check, her funds are unlocked. If someone (eventually one of her sons) triggers the controlValidSubscription
 //    function associated to her address, Mary's sons will receive the funds deposited by their mother when she was alive.
 
 //To IMPLEMENT in future:
-// 1- check space optimization over variables
-// 2- check fees control over the withdraws and funds release
-// 3 - unit testing
-// 4 - integration testing
+// 1- check gas optimization and then unit tests again
+
 contract Testament {
 
   uint8 constant MAX_BENEF = 3; //max number of beneficiaries for each subscribed account
