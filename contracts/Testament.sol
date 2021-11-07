@@ -24,13 +24,15 @@ contract Testament {
     int amount;
   }
 
-  mapping(address => Beneficiary[MAX_BENEF]) public testaments;
+  mapping(address => Beneficiary[MAX_BENEF]) testaments;
   mapping(address => uint8) public isStored; //uint8 is 1 if the address already have been registered, 0 otherwise
   mapping(address => uint) lastChecks; //date of the last check for each account
 
   //The indexed parameters for logged events will allow you to search for these events using the indexed parameters as filters.
-  event Registered(address _registeredAddress);
-  event TestamentTriggered(address indexed _from, address indexed _to, int _value);
+  event LogAccountSubscribed(address _address, uint time);
+  event LogAccountUnsubscribed(address _address, uint time);
+  event LogTestamentTriggered(address _from, address _to, int _value, uint time);
+
 
   modifier onlyRegistered(){
     require(isStored[msg.sender] == 1, "The Sender Account is not registered");
@@ -49,7 +51,7 @@ contract Testament {
     for(uint8 i = 0; i < MAX_BENEF; i++){ //set all amount of beneficiaries at -1 to indicate that are alla empty
       testaments[msg.sender][i].amount = -1;
     }
-    emit Registered(msg.sender);
+    emit LogAccountSubscribed(msg.sender, block.timestamp);
   }
 
   function addBeneficiary(address beneficiary) public payable onlyRegistered{
@@ -84,7 +86,7 @@ contract Testament {
     //<address payable>.send(uint256 amount) returns (bool):
     (bool sent, ) = _to.call{value:uint(_value)}("");
     require(sent, "Failed to send Ether");
-    emit TestamentTriggered(_from, _to, _value);
+    emit LogTestamentTriggered(_from, _to, _value, block.timestamp);
   }
 
   function removeBeneficiary(address _beneficiary) public payable onlyRegistered{
@@ -124,6 +126,7 @@ contract Testament {
   function unsubscribe() public onlyRegistered{
     removeAllBeneficiaries();
     cleanMemory(msg.sender);
+    emit LogAccountUnsubscribed(msg.sender, block.timestamp);
   }
 
   function cleanMemory(address _toRemove) private{
@@ -133,6 +136,7 @@ contract Testament {
     delete lastChecks[_toRemove];
     delete isStored[_toRemove];
     delete testaments[_toRemove];
+    emit LogAccountUnsubscribed(_toRemove, block.timestamp);
   }
 
   function controlValidSubscription(address _toCheck) public {
